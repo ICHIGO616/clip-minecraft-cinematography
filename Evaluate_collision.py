@@ -16,11 +16,7 @@ import os
 from datetime import datetime
 
 # --- 設定 ---
-#TARGET_TEXT = "A cinematic drone shot of a majestic red Minecraft pagoda and temple"
-TARGET_TEXT = "A Minecraft village with houses and temples"
-
-#NEGATIVE_TEXT = "A close up of a wall, view with no buildings, only sky, water, or terrain" #集落上空用
-NEGATIVE_TEXT = "A close up of a gray stone wall, blocked view, obstacle, blue ocean, green forest, black space" #集落内（地上視点）用
+# Prompts are automatically set based on the scenario input below
 
 WINDOW_NAME = "Minecraft* Forge 1.21.4 - シングルプレイ"
 
@@ -50,7 +46,6 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Loading CLIP model on {device}...")
 model, preprocess = clip.load("ViT-B/32", device=device)
 
-text_inputs = clip.tokenize([TARGET_TEXT, NEGATIVE_TEXT]).to(device)
 print("Model loaded.")
 
 def get_minecraft_window_rect():
@@ -146,13 +141,23 @@ def main():
     print("\n===== 実験情報を入力してください =====")
     scenario = input("シナリオ (aerial / ground): ").strip()
 
-    # シナリオに応じてネガティブシーン判定閾値を設定
+    # シナリオに応じてプロンプトと閾値を自動設定
     if scenario == "aerial":
+        TARGET_TEXT = "A cinematic drone shot of a majestic red Minecraft pagoda and temple"
+        NEGATIVE_TEXT = "A close up of a wall, view with no buildings, only sky, water, or terrain"
         NEGATIVE_SCENE_THRESHOLD = 0.26
     elif scenario == "ground":
+        TARGET_TEXT = "A Minecraft village with houses and temples"
+        NEGATIVE_TEXT = "A close up of a gray stone wall, blocked view, obstacle, blue ocean, green forest, black space"
         NEGATIVE_SCENE_THRESHOLD = 0.23
     else:
+        TARGET_TEXT = ""
+        NEGATIVE_TEXT = ""
         NEGATIVE_SCENE_THRESHOLD = 0.25
+
+    # プロンプトをCLIPでエンコード
+    global text_inputs
+    text_inputs = clip.tokenize([TARGET_TEXT, NEGATIVE_TEXT]).to(device)
 
     trial    = input("試行番号 (1 / 2 / 3 / 4 / 5): ").strip()
     condition = "neg_on" if USE_NEGATIVE else "neg_off"
