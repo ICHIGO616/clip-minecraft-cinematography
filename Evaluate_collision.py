@@ -159,7 +159,7 @@ def main():
     global text_inputs
     text_inputs = clip.tokenize([TARGET_TEXT, NEGATIVE_TEXT]).to(device)
 
-    trial    = input("試行番号 (1 / 2 / 3 / 4 / 5): ").strip()
+    trial    = input("試行番号 : ").strip()
     condition = "neg_on" if USE_NEGATIVE else "neg_off"
     print(f"条件: {condition} | シナリオ: {scenario} | 試行: {trial}")
     print(f"NEGATIVE_SCENE_THRESHOLD: {NEGATIVE_SCENE_THRESHOLD}")
